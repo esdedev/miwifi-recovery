@@ -1,0 +1,16 @@
+[package]
+name = "miwifi-recovery-core"
+description = "DHCP + TFTP recovery server and firmware checks for Xiaomi routers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[lib]
+name = "miwifi_core"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+crc32fast = "1"
