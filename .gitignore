@@ -1,0 +1,7 @@
+/target/
+app/src-tauri/gen/
+*.bin
+*.img
+*.zip
+*.7z
+.playwright-mcp/
