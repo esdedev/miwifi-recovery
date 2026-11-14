@@ -1,0 +1,20 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions of the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        { "url": "http://192.168.31.1" },
+        { "url": "http://192.168.31.1/*" },
+        { "url": "https://github.com/esdedev/miwifi-recovery*" },
+        { "url": "https://www.mi.com/*" },
+        { "url": "https://www.miwifi.com/*" }
+      ]
+    }
+  ]
+}
