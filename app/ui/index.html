@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MiWiFi Recovery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <img src="icon.png" alt="" width="36" height="36">
+      <div>
+        <strong>MiWiFi Recovery</strong>
+        <span data-t="tagline"></span>
+      </div>
+    </div>
+    <ol class="steps" id="steps">
+      <li data-step="firmware"><span class="n">1</span><span data-t="step_firmware"></span></li>
+      <li data-step="pc"><span class="n">2</span><span data-t="step_pc"></span></li>
+      <li data-step="router"><span class="n">3</span><span data-t="step_router"></span></li>
+      <li data-step="flash"><span class="n">4</span><span data-t="step_flash"></span></li>
+      <li data-step="finish"><span class="n">5</span><span data-t="step_finish"></span></li>
+    </ol>
+    <div class="rail-foot">
+      <div class="lang" role="group" aria-label="Language">
+        <button data-lang="en">English</button>
+        <button data-lang="es">Español</button>
+      </div>
+      <p class="fine"><span data-t="open_source"></span> · GPL-3.0</p>
+    </div>
+  </aside>
+
+  <main>
+    <div class="banner" id="restoreBanner" hidden>
+      <p></p>
+      <button class="ghost" id="restoreNow" data-t="restore_now"></button>
+    </div>
+
+    <!-- 1. Firmware -->
+    <section class="page" id="page-firmware">
+      <h1 data-t="fw_title"></h1>
+      <p class="lead" data-t="fw_lead"></p>
+
+      <button class="drop" id="drop">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6v24m0 0-9-9m9 9 9-9M8 34v6h32v-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="drop-main" data-t="fw_drop"></span>
+        <span class="drop-sub" data-t="fw_drop_sub"></span>
+      </button>
+
+      <div id="fwResult" hidden>
+        <dl class="facts" id="facts"></dl>
+        <div class="questions">
+          <label class="field">
+            <span data-t="q_model"></span>
+            <input id="model" autocomplete="off" spellcheck="false" placeholder="RD15">
+            <small data-t="q_model_help"></small>
+          </label>
+          <label class="field">
+            <span data-t="q_installed"></span>
+            <input id="installed" autocomplete="off" spellcheck="false" placeholder="1.0.87">
+            <small data-t="q_installed_help"></small>
+          </label>
+        </div>
+        <div id="findings" class="findings"></div>
+      </div>
+      <details class="more">
+        <summary data-t="where_fw"></summary>
+        <p data-t="where_fw_text"></p>
+      </details>
+    </section>
+
+    <!-- 2. This PC -->
+    <section class="page" id="page-pc" hidden>
+      <h1 data-t="pc_title"></h1>
+      <p class="lead" data-t="pc_lead"></p>
+      <div class="adapters" id="adapters"></div>
+      <div class="row">
+        <button class="ghost" id="refreshAdapters" data-t="refresh"></button>
+      </div>
+      <div id="pcWarnings" class="findings"></div>
+      <div class="choice" id="pcChoice">
+        <button class="primary" id="autoIp" data-t="auto_ip"></button>
+        <button class="ghost" id="manualIp" data-t="manual_ip"></button>
+      </div>
+      <p class="status" id="pcStatus" role="status"></p>
+      <div class="guide" id="manualGuide" hidden>
+        <h2 data-t="manual_title"></h2>
+        <ol>
+          <li data-t="manual_1"></li>
+          <li data-t="manual_2"></li>
+          <li data-t="manual_3"></li>
+          <li data-t="manual_4"></li>
+          <li data-t="manual_5"></li>
+        </ol>
+        <label class="check"><input type="checkbox" id="manualDone"> <span data-t="manual_done"></span></label>
+      </div>
+    </section>
+
+    <!-- 3. Router -->
+    <section class="page" id="page-router" hidden>
+      <h1 data-t="router_title"></h1>
+      <p class="lead" data-t="router_lead"></p>
+      <div class="router-guide">
+        <svg class="rear" viewBox="0 0 520 165" role="img" aria-labelledby="rearTitle">
+          <title id="rearTitle">Back of the router</title>
+          <rect x="10" y="40" width="500" height="120" rx="22" class="body"/>
+          <g class="port"><rect x="60" y="80" width="56" height="44" rx="6"/><text x="88" y="146" data-t="port_power"></text></g>
+          <g><circle cx="160" cy="102" r="7" class="hole"/><text x="160" y="146" class="hl" data-t="port_reset"></text></g>
+          <g class="port wan"><rect x="210" y="78" width="60" height="48" rx="6"/><text x="240" y="146">WAN</text></g>
+          <g class="port lan"><rect x="290" y="78" width="60" height="48" rx="6"/><rect x="360" y="78" width="60" height="48" rx="6"/><rect x="430" y="78" width="60" height="48" rx="6"/><text x="390" y="146" class="hl">LAN</text></g>
+          <path d="M320 78 C320 30 260 20 230 20" class="cable"/>
+          <text x="226" y="16" class="cable-label" data-t="cable_to_pc"></text>
+        </svg>
+        <ol class="big-steps">
+          <li data-t="r_1"></li>
+          <li data-t="r_2"></li>
+          <li data-t="r_3"></li>
+          <li data-t="r_4"></li>
+        </ol>
+        <p class="note" data-t="router_note"></p>
+      </div>
+    </section>
+
+    <!-- 4. Recovery -->
+    <section class="page" id="page-flash" hidden>
+      <h1 id="flashTitle"></h1>
+      <p class="lead" id="flashLead"></p>
+      <div class="link" id="link" data-state="idle">
+        <div class="end pc">
+          <svg viewBox="0 0 64 48" aria-hidden="true"><rect x="4" y="4" width="56" height="34" rx="4"/><path d="M22 44h20"/></svg>
+          <span>192.168.31.100</span>
+        </div>
+        <div class="wire"><div class="fill" id="wireFill"></div><div class="pulse"></div></div>
+        <div class="end router">
+          <svg viewBox="0 0 64 48" aria-hidden="true"><rect x="4" y="18" width="56" height="24" rx="8"/><path d="M14 18V6M50 18V6"/></svg>
+          <i class="led" id="led" aria-hidden="true"></i>
+          <span id="routerIp">—</span>
+        </div>
+      </div>
+      <div class="meter" id="meter" hidden>
+        <strong id="pct">0%</strong>
+        <span id="rate"></span>
+      </div>
+      <p class="led-hint" id="ledHint"></p>
+      <details class="more log-wrap">
+        <summary data-t="details"></summary>
+        <ol class="log" id="log"></ol>
+      </details>
+    </section>
+
+    <!-- 5. Finish -->
+    <section class="page" id="page-finish" hidden>
+      <h1 data-t="fin_title"></h1>
+      <p class="lead" data-t="fin_lead"></p>
+      <div class="outcomes">
+        <div class="outcome ok">
+          <i class="led blink-blue" aria-hidden="true"></i>
+          <div>
+            <h2 data-t="fin_ok_title"></h2>
+            <p data-t="fin_ok_text"></p>
+          </div>
+        </div>
+        <div class="outcome bad">
+          <i class="led steady-amber" aria-hidden="true"></i>
+          <div>
+            <h2 data-t="fin_bad_title"></h2>
+            <p data-t="fin_bad_text"></p>
+            <ul>
+              <li data-t="fin_bad_1"></li>
+              <li data-t="fin_bad_2"></li>
+              <li data-t="fin_bad_3"></li>
+            </ul>
+            <button class="ghost small" id="tryAgain" data-t="try_again"></button>
+          </div>
+        </div>
+      </div>
+      <p class="status" id="probeStatus" role="status"></p>
+      <div class="row">
+        <button class="ghost" id="openRouter" hidden data-t="open_router"></button>
+        <button class="ghost" id="restoreNet" hidden data-t="restore_net"></button>
+      </div>
+    </section>
+
+    <footer class="actions">
+      <button class="ghost" id="back" data-t="back"></button>
+      <span class="spacer"></span>
+      <button class="primary" id="next"></button>
+    </footer>
+  </main>
+</div>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
