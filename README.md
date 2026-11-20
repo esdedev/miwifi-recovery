@@ -65,7 +65,7 @@ The screenshots use example data.
 4. **Recovery.** The tool waits, gives the router an address and sends the firmware (about 15 s).
 5. **Result.** The router checks the signature and writes the flash (1–5 min):
    - **blinking blue**: done. Power-cycle it. The tool tells you when 192.168.31.1 answers;
-   - **steady orange/red**: refused. Nothing was written. The screen lists the usual causes.
+   - **steady orange**: refused. Nothing was written. The screen lists the usual causes.
 
 Command line (any OS; on Linux/macOS run with `sudo` because ports 67/69 are privileged):
 

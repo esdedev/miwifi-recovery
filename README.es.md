@@ -67,7 +67,7 @@ Las capturas usan datos de ejemplo.
 5. **Resultado.** El router comprueba la firma y graba la memoria (1–5 min):
    - **azul parpadeando**: hecho. Apágalo y enciéndelo. La herramienta te avisa cuando
      192.168.31.1 responde.
-   - **naranja o rojo fijo**: rechazado. No se ha grabado nada y la pantalla te dice las causas
+   - **naranja fijo**: rechazado. No se ha grabado nada y la pantalla te dice las causas
      habituales.
 
 ## Por qué el router rechaza un archivo

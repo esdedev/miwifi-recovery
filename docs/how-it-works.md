@@ -8,7 +8,7 @@ were not verified. Statements marked *(inferred)* are not confirmed from code.
 
 - Hold the Reset button at power-on for 5 s. If the `restore_defaults` flag is set (right after a
   successful recovery), it takes 45 s.
-- The status light blinks fast (channel A, orange *(inferred colour)*) while the bootloader:
+- The status light blinks fast in orange (LED channel A) while the bootloader:
   1. pings `192.168.31.100` up to 4 times (a failure is only logged);
   2. requests an address over DHCP (vendor class `MSFT 5.0`);
   3. downloads the image over TFTP to RAM. The filename comes from the DHCP offer; without one it
@@ -64,7 +64,7 @@ check 3 it needs you to type the installed version.
 | Result | Light | Then |
 |---|---|---|
 | Success | blinks slowly (1 s on / 1 s off), channel B, blue *(inferred colour)* | waits forever; power-cycle it |
-| Any refusal or error | channel A steady | waits forever; power-cycle it |
+| Any refusal or error | steady orange (channel A); confirmed on an RD15 refusing a downgrade | waits forever; power-cycle it |
 
 The bootloader does not reboot by itself in either case. That is why the tool asks you to look at
 the light, then checks when the router answers at 192.168.31.1.
@@ -76,3 +76,11 @@ plus `<RRT> by MIWIFI`, defaults `192.168.31.100`, pool `192.168.31.101`, and on
 (through libcurl) to `http://api.miwifi.com/data/tffp_rom_link_info`. That endpoint returns a
 plain-text list of only three firmware links (Xiaomi Router 4, 4Q and 4C). One of the links has a
 malformed `http://http://` prefix. The tool does not inspect the firmware it serves.
+
+## Field test
+
+On an RD15 running 1.0.87, the tool served the official 1.0.68 image without the installed
+version being entered. Every network step worked, and so did the automatic IP setup on Windows.
+The transfer completed. The router then refused the image: the light turned steady orange and
+nothing was written. After a power cycle it started 1.0.87 again with its configuration intact.
+After boot, a steady yellow light only means the WAN has no Internet connection.

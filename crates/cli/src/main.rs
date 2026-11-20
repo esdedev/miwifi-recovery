@@ -163,7 +163,7 @@ fn main() -> ExitCode {
             Event::TftpDone { secs, retransmits, .. } => format!(
                 "Transfer complete in {secs:.1}s ({retransmits} retransmits). The router now checks the \
                  signature and writes the flash. Do not unplug it.\n  Blinking (usually blue) = success: \
-                 power-cycle it.  Steady light = refused (older version, wrong model or damaged file)."
+                 power-cycle it.  Steady orange = refused (older version, wrong model or damaged file)."
             ),
             Event::TftpFailed { reason, .. } => format!("Transfer failed: {reason}"),
             Event::Warning { message } => format!("Warning: {message}"),
