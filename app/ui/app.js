@@ -66,7 +66,7 @@ function canContinue() {
     case "router":
       return true;
     case "flash":
-      return S.phase === "fatal" || S.phase === "busy" || S.phase === "done";
+      return ["fatal", "busy", "denied", "done"].includes(S.phase);
     case "finish":
       return false;
   }
@@ -266,6 +266,8 @@ function renderPc() {
   $("autoIp").disabled = S.selected === null;
   if (!windows) {
     $("manualGuide").hidden = false;
+    $("manualGuide").querySelector("h2").hidden = true;
+    $("manualGuide").querySelector("ol").hidden = true;
     $("pcStatus").innerHTML = t("manual_other_os");
   }
 }
@@ -331,6 +333,7 @@ const PHASE_TEXT = {
   done: ["flash_done_t", "flash_done_l", "done"],
   failed: ["flash_failed_t", "flash_failed_l", "failed"],
   busy: ["flash_busy_t", "flash_busy_l", "failed"],
+  denied: ["flash_denied_t", "flash_denied_l", "failed"],
   fatal: ["flash_fatal_t", "flash_fatal_l", "failed"],
 };
 
@@ -403,7 +406,7 @@ T.event.listen("recovery", ({ payload: e }) => {
       break;
     case "fatal":
       log("ev_warning", e);
-      setPhase(e.busy ? "busy" : "fatal", { message: e.message });
+      setPhase(e.busy ? "busy" : e.denied ? "denied" : "fatal", { message: e.message, exe: e.exe || "miwifi-recovery" });
       break;
   }
 });

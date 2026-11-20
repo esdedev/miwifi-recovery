@@ -24,7 +24,9 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": [
+      "nsis"
+    ],
     "publisher": "Esdedev",
     "category": "Utility",
     "shortDescription": "Open-source recovery tool for Xiaomi routers",
@@ -34,6 +36,14 @@
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.ico"
-    ]
+    ],
+    "linux": {
+      "deb": {
+        "depends": [
+          "libcap2-bin"
+        ],
+        "postInstallScript": "linux/postinst.sh"
+      }
+    }
   }
 }

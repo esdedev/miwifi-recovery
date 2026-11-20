@@ -115,9 +115,57 @@ pub fn load_snapshot(dir: &Path) -> Option<Snapshot> {
 #[cfg(windows)]
 pub use win::{list_adapters, run_elevated};
 
+/// Linux: read the adapters from `ip -json addr show` (iproute2). Elsewhere: none (manual setup).
 #[cfg(not(windows))]
 pub fn list_adapters() -> Vec<Adapter> {
-    vec![]
+    if !cfg!(target_os = "linux") {
+        return vec![];
+    }
+    let Ok(out) = std::process::Command::new("ip").args(["-json", "addr", "show"]).output() else {
+        return vec![];
+    };
+    parse_ip_json(&out.stdout, |name| Path::new("/sys/class/net").join(name).join("wireless").exists())
+}
+
+/// Parse `ip -json addr show`. `is_wireless(ifname)` tells Wi-Fi interfaces apart.
+#[cfg_attr(windows, allow(dead_code))]
+pub fn parse_ip_json(json: &[u8], is_wireless: impl Fn(&str) -> bool) -> Vec<Adapter> {
+    let Ok(serde_json::Value::Array(ifaces)) = serde_json::from_slice::<serde_json::Value>(json) else {
+        return vec![];
+    };
+    let mut out = vec![];
+    for i in ifaces {
+        let name = i["ifname"].as_str().unwrap_or_default().to_string();
+        if i["link_type"].as_str() != Some("ether") || name.is_empty() {
+            continue;
+        }
+        let wireless = is_wireless(&name);
+        let mut addrs = vec![];
+        let mut dhcp = false;
+        for a in i["addr_info"].as_array().into_iter().flatten() {
+            if a["family"].as_str() != Some("inet") {
+                continue;
+            }
+            if let (Some(ip), Some(prefix)) = (a["local"].as_str().and_then(|s| s.parse().ok()), a["prefixlen"].as_u64()) {
+                addrs.push(Addr { ip, prefix: prefix as u8 });
+                dhcp |= a["dynamic"].as_bool().unwrap_or(false);
+            }
+        }
+        let flags: Vec<&str> = i["flags"].as_array().into_iter().flatten().filter_map(|f| f.as_str()).collect();
+        out.push(Adapter {
+            index: i["ifindex"].as_u64().unwrap_or(0) as u32,
+            description: if wireless { "Wi-Fi".into() } else { "Ethernet".into() },
+            name,
+            mac: i["address"].as_str().unwrap_or_default().to_string(),
+            up: flags.contains(&"LOWER_UP"),
+            wired: !wireless,
+            wireless,
+            dhcp,
+            addrs,
+            gateways: vec![],
+        });
+    }
+    out
 }
 
 #[cfg(not(windows))]
@@ -319,6 +367,23 @@ mod win {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn linux_ip_json() {
+        let json = br#"[
+          {"ifindex":1,"ifname":"lo","flags":["LOOPBACK","UP"],"link_type":"loopback","addr_info":[{"family":"inet","local":"127.0.0.1","prefixlen":8}]},
+          {"ifindex":2,"ifname":"enp3s0","flags":["BROADCAST","UP","LOWER_UP"],"link_type":"ether","address":"02:00:00:00:00:01",
+           "addr_info":[{"family":"inet","local":"192.168.31.100","prefixlen":24},{"family":"inet6","local":"fe80::1","prefixlen":64}]},
+          {"ifindex":3,"ifname":"wlp2s0","flags":["BROADCAST","UP"],"link_type":"ether","address":"02:00:00:00:00:02",
+           "addr_info":[{"family":"inet","local":"10.0.0.7","prefixlen":24,"dynamic":true}]}
+        ]"#;
+        let a = parse_ip_json(json, |n| n.starts_with("wl"));
+        assert_eq!(a.len(), 2);
+        assert!(a[0].wired && a[0].up && a[0].has_recovery_ip() && !a[0].dhcp);
+        assert_eq!(a[0].addrs.len(), 1);
+        assert!(a[1].wireless && !a[1].up && a[1].dhcp);
+        assert!(parse_ip_json(b"not json", |_| false).is_empty());
+    }
 
     #[test]
     fn masks() {

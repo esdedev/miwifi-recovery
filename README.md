@@ -2,6 +2,8 @@
 
 [Español](README.es.md)
 
+![MiWiFi Recovery: firmware check and recovery in progress](docs/screenshots/hero-en.png)
+
 An open-source replacement for Xiaomi's "MiWiFi Repair Tool". It reinstalls the official
 firmware on a Xiaomi router that no longer starts, using the router's built-in recovery mode.
 
@@ -10,8 +12,9 @@ firmware on a Xiaomi router that no longer starts, using the router's built-in r
   why: older version than installed (anti-rollback), wrong model, or damaged download.
 - **Sets up the PC for you** (Windows, optional). It gives the Ethernet adapter the address the
   router looks for, and puts your settings back at the end. Prefer to do it by hand? It shows how.
-- **Small and auditable.** About 3,000 lines of Rust and plain HTML/CSS/JS, half of it the bilingual interface. No telemetry, no downloads, no
-  installers inside installers.
+- **Windows and Linux.** Desktop app for both, plus a command-line version that also runs on macOS.
+- **Small and auditable.** About 3,000 lines of Rust and plain HTML/CSS/JS, half of it the
+  bilingual interface. No telemetry, no downloads, no installers inside installers.
 
 > Use it only on your own devices. Recovery erases the router's settings.
 > Read the [legal notice](LEGAL.md).
@@ -24,12 +27,32 @@ Get the latest build from [Releases](https://github.com/esdedev/miwifi-recovery/
 |---|---|
 | `MiWiFi-Recovery_x.y.z_x64-setup.exe` | Windows installer |
 | `miwifi-recovery.exe` | Windows, portable (no install) |
+| `miwifi-recovery_x.y.z_amd64.deb` | Linux (Debian, Ubuntu, Mint…) |
+| `miwifi-recovery_x.y.z_amd64.AppImage` | Linux, portable |
 | `miwifi-recovery-cli-*` | Command-line version for Windows, Linux and macOS |
 | `SHA256SUMS.txt` | Checksums of all files |
 
 Releases are built by [GitHub Actions](.github/workflows/release.yml) from the tagged source, so
-anyone can check how each binary was made. The Windows app needs WebView2, which comes with
-Windows 10 and 11.
+anyone can check how each binary was made.
+
+- **Windows:** needs WebView2, which comes with Windows 10 and 11.
+- **Linux:** needs WebKitGTK (installed by the `.deb`). DHCP and TFTP use ports 67 and 69, which
+  need permission: the `.deb` grants it on install. For the AppImage or a self-built binary, run
+  once `sudo setcap cap_net_bind_service=+ep ./miwifi-recovery` (the app tells you if it is
+  missing). On Linux the app does not change the IP for you; it shows the `ip addr` command.
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Firmware check](docs/screenshots/1-firmware-check-en.png) | ![This PC](docs/screenshots/2-pc-setup-en.png) |
+| **1. Firmware.** Model, version, checksum and the anti-rollback check before anything is sent. | **2. This PC.** Pick the adapter; the tool sets 192.168.31.100 or shows how. |
+| ![Router steps](docs/screenshots/3-router-steps-en.png) | ![Recovery](docs/screenshots/4-recovery-progress-en.png) |
+| **3. Router.** What to press and where to plug the cable. | **4. Recovery.** Live transfer with a technical log. |
+| ![Result](docs/screenshots/5-result-en.png) | ![Dark mode](docs/screenshots/4-recovery-progress-dark-en.png) |
+| **5. Result.** How to read the router's light. | Follows the system's dark mode. |
+
+The screenshots use example data.
 
 ## How to use it
 

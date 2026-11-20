@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+![MiWiFi Recovery: revisión del firmware y recuperación en curso](docs/screenshots/hero-es.png)
+
 Alternativa de código abierto a la "MiWiFi Repair Tool" de Xiaomi. Reinstala el firmware
 oficial en un router Xiaomi que ya no arranca, usando el modo de recuperación del propio router.
 
@@ -11,6 +13,8 @@ oficial en un router Xiaomi que ya no arranca, usando el modo de recuperación d
 - **Configura el PC por ti** (Windows, opcional). Pone en el adaptador Ethernet la dirección
   que busca el router y al final deja tu configuración como estaba. Si prefieres hacerlo a mano,
   te enseña cómo.
+- **Windows y Linux.** Aplicación de escritorio para los dos y versión de línea de comandos que
+  también funciona en macOS.
 - **Pequeña y auditable.** Unas 3.000 líneas de Rust y HTML/CSS/JS sencillo, la mitad la interfaz bilingüe. Sin telemetría, sin
   descargas y sin instaladores dentro de instaladores.
 
@@ -22,11 +26,32 @@ oficial en un router Xiaomi que ya no arranca, usando el modo de recuperación d
 En [Releases](https://github.com/esdedev/miwifi-recovery/releases) están:
 - el instalador para Windows;
 - la versión portable `miwifi-recovery.exe`;
+- para Linux, el paquete `.deb` (Debian, Ubuntu, Mint…) y el `.AppImage` portable;
 - la versión de línea de comandos para Windows, Linux y macOS;
 - `SHA256SUMS.txt`, con las sumas de control de todos los archivos.
 
 GitHub Actions compila cada versión a partir del código etiquetado, así que cualquiera puede
 comprobar cómo se hizo cada binario.
+
+**En Linux**, DHCP y TFTP usan los puertos 67 y 69, que necesitan permiso:
+- el `.deb` lo concede al instalarse;
+- con el AppImage o un binario compilado por ti, ejecuta una vez
+  `sudo setcap cap_net_bind_service=+ep ./miwifi-recovery` (la aplicación te avisa si falta).
+
+En Linux la aplicación no cambia la IP por ti: te muestra el comando `ip addr`.
+
+## Capturas
+
+| | |
+|---|---|
+| ![Firmware](docs/screenshots/1-firmware-check-es.png) | ![Este PC](docs/screenshots/2-pc-setup-es.png) |
+| **1. Firmware.** Modelo, versión, suma de control y comprobación anti-rollback antes de enviar nada. | **2. Este PC.** Elige el adaptador; la herramienta pone 192.168.31.100 o te explica cómo. |
+| ![Router](docs/screenshots/3-router-steps-es.png) | ![Recuperación](docs/screenshots/4-recovery-progress-es.png) |
+| **3. Router.** Qué pulsar y dónde conectar el cable. | **4. Recuperación.** Transferencia en directo con registro técnico. |
+| ![Resultado](docs/screenshots/5-result-es.png) | ![Modo oscuro](docs/screenshots/4-recovery-progress-dark-en.png) |
+| **5. Resultado.** Cómo leer la luz del router. | Sigue el modo oscuro del sistema. |
+
+Las capturas usan datos de ejemplo.
 
 ## Cómo se usa
 

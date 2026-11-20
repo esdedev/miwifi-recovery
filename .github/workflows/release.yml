@@ -57,9 +57,29 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: gui-windows, path: dist/* }
 
+  gui-linux:
+    needs: test
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+      - run: cargo test -p miwifi-recovery
+      - run: cargo install tauri-cli --version "^2" --locked
+      - run: cargo tauri build --bundles deb,appimage
+        working-directory: app/src-tauri
+      - run: |
+          mkdir -p dist
+          cp target/release/bundle/deb/*.deb target/release/bundle/appimage/*.AppImage dist/
+          cd dist && for f in *" "*; do [ -e "$f" ] && mv "$f" "${f// /-}"; done; ls -la
+      - uses: actions/upload-artifact@v4
+        with: { name: gui-linux, path: dist/* }
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [cli, gui-windows]
+    needs: [cli, gui-windows, gui-linux]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

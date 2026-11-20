@@ -169,7 +169,10 @@ fn start_recovery(app: AppHandle, state: State<AppState>, bind_any: bool) -> Res
                 }
                 Err(e) => {
                     emit(&app, json!({ "type": "fatal", "message": e.to_string(),
-                                       "busy": e.kind() == std::io::ErrorKind::AddrInUse }));
+                                       "busy": e.kind() == std::io::ErrorKind::AddrInUse,
+                                       // Linux/macOS: ports below 1024 need root or CAP_NET_BIND_SERVICE.
+                                       "denied": e.kind() == std::io::ErrorKind::PermissionDenied,
+                                       "exe": std::env::current_exe().map(|p| p.display().to_string()).unwrap_or_default() }));
                     break;
                 }
             }
