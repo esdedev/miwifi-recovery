@@ -216,9 +216,16 @@ T.webviewWindow.getCurrentWebviewWindow().onDragDropEvent((ev) => {
 const hasIp = (a) => a.addrs.some((x) => x.ip === "192.168.31.100");
 const inSubnet = (a) => a.addrs.some((x) => x.ip.startsWith("192.168.31."));
 
+// Real wired adapters (no VirtualBox/Hyper-V/VPN); fall back to every wired one.
+function cableAdapters() {
+  const wired = S.adapters.filter((a) => a.wired || hasIp(a));
+  const physical = wired.filter((a) => a.physical || hasIp(a));
+  return physical.length ? physical : wired;
+}
+
 async function loadAdapters() {
   S.adapters = await invoke("list_adapters");
-  const wired = S.adapters.filter((a) => a.wired || hasIp(a));
+  const wired = cableAdapters();
   if (S.selected === null || !wired.some((a) => a.index === S.selected)) {
     const best = wired.find(hasIp) || wired.find((a) => a.up) || wired[0];
     S.selected = best ? best.index : null;
@@ -230,7 +237,7 @@ $("refreshAdapters").addEventListener("click", loadAdapters);
 function renderPc() {
   if (S.step !== "pc") return;
   const list = $("adapters");
-  const wired = S.adapters.filter((a) => a.wired || hasIp(a));
+  const wired = cableAdapters();
   list.innerHTML = "";
   if (!wired.length) list.innerHTML = `<p class="status">${t("no_adapters")}</p>`;
   for (const a of wired) {

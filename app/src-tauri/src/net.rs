@@ -29,6 +29,8 @@ pub struct Adapter {
     pub up: bool,
     pub wired: bool,
     pub wireless: bool,
+    /// Has a physical connector (not VirtualBox, Hyper-V, VPN, ...).
+    pub physical: bool,
     pub dhcp: bool,
     pub addrs: Vec<Addr>,
     pub gateways: Vec<Ipv4Addr>,
@@ -124,12 +126,13 @@ pub fn list_adapters() -> Vec<Adapter> {
     let Ok(out) = std::process::Command::new("ip").args(["-json", "addr", "show"]).output() else {
         return vec![];
     };
-    parse_ip_json(&out.stdout, |name| Path::new("/sys/class/net").join(name).join("wireless").exists())
+    let sys = |name: &str, f: &str| Path::new("/sys/class/net").join(name).join(f).exists();
+    parse_ip_json(&out.stdout, |n| sys(n, "wireless"), |n| sys(n, "device"))
 }
 
 /// Parse `ip -json addr show`. `is_wireless(ifname)` tells Wi-Fi interfaces apart.
 #[cfg_attr(windows, allow(dead_code))]
-pub fn parse_ip_json(json: &[u8], is_wireless: impl Fn(&str) -> bool) -> Vec<Adapter> {
+pub fn parse_ip_json(json: &[u8], is_wireless: impl Fn(&str) -> bool, is_physical: impl Fn(&str) -> bool) -> Vec<Adapter> {
     let Ok(serde_json::Value::Array(ifaces)) = serde_json::from_slice::<serde_json::Value>(json) else {
         return vec![];
     };
@@ -140,6 +143,7 @@ pub fn parse_ip_json(json: &[u8], is_wireless: impl Fn(&str) -> bool) -> Vec<Ada
             continue;
         }
         let wireless = is_wireless(&name);
+        let physical = is_physical(&name);
         let mut addrs = vec![];
         let mut dhcp = false;
         for a in i["addr_info"].as_array().into_iter().flatten() {
@@ -160,6 +164,7 @@ pub fn parse_ip_json(json: &[u8], is_wireless: impl Fn(&str) -> bool) -> Vec<Ada
             up: flags.contains(&"LOWER_UP"),
             wired: !wireless,
             wireless,
+            physical,
             dhcp,
             addrs,
             gateways: vec![],
@@ -217,8 +222,8 @@ mod win {
     use std::net::Ipv4Addr;
     use windows_sys::Win32::Foundation::{CloseHandle, ERROR_BUFFER_OVERFLOW, ERROR_CANCELLED, NO_ERROR};
     use windows_sys::Win32::NetworkManagement::IpHelper::{
-        GetAdaptersAddresses, GAA_FLAG_INCLUDE_GATEWAYS, GAA_FLAG_SKIP_ANYCAST, GAA_FLAG_SKIP_MULTICAST,
-        IP_ADAPTER_ADDRESSES_LH,
+        GetAdaptersAddresses, GetIfEntry2, GAA_FLAG_INCLUDE_GATEWAYS, GAA_FLAG_SKIP_ANYCAST, GAA_FLAG_SKIP_MULTICAST,
+        IP_ADAPTER_ADDRESSES_LH, MIB_IF_ROW2,
     };
     use windows_sys::Win32::Networking::WinSock::{AF_INET, AF_UNSPEC, SOCKADDR, SOCKADDR_IN};
     use windows_sys::Win32::System::Threading::{GetExitCodeProcess, WaitForSingleObject, INFINITE};
@@ -297,8 +302,9 @@ mod win {
                     g = (*g).Next;
                 }
                 let mac_len = (a.PhysicalAddressLength as usize).min(8);
+                let index = a.Anonymous1.Anonymous.IfIndex;
                 out.push(Adapter {
-                    index: a.Anonymous1.Anonymous.IfIndex,
+                    index,
                     name: wide(a.FriendlyName),
                     description: wide(a.Description),
                     mac: a.PhysicalAddress[..mac_len]
@@ -309,6 +315,7 @@ mod win {
                     up: a.OperStatus == 1,
                     wired: a.IfType == IF_TYPE_ETHERNET_CSMACD,
                     wireless: a.IfType == IF_TYPE_IEEE80211,
+                    physical: connector_present(index),
                     dhcp: a.Anonymous2.Flags & IP_ADAPTER_DHCP_ENABLED != 0,
                     addrs,
                     gateways,
@@ -316,6 +323,19 @@ mod win {
             }
         }
         out
+    }
+
+    /// Same test as `Get-NetAdapter -Physical`: the interface has a physical connector.
+    fn connector_present(index: u32) -> bool {
+        unsafe {
+            let mut row: MIB_IF_ROW2 = std::mem::zeroed();
+            row.InterfaceIndex = index;
+            if GetIfEntry2(&mut row) != NO_ERROR {
+                return true; // unknown: do not hide it
+            }
+            // Bit 2 of InterfaceAndOperStatusFlags = ConnectorPresent.
+            row.InterfaceAndOperStatusFlags._bitfield & 0b100 != 0
+        }
     }
 
     fn to_wide(s: &str) -> Vec<u16> {
@@ -377,12 +397,12 @@ mod tests {
           {"ifindex":3,"ifname":"wlp2s0","flags":["BROADCAST","UP"],"link_type":"ether","address":"02:00:00:00:00:02",
            "addr_info":[{"family":"inet","local":"10.0.0.7","prefixlen":24,"dynamic":true}]}
         ]"#;
-        let a = parse_ip_json(json, |n| n.starts_with("wl"));
+        let a = parse_ip_json(json, |n| n.starts_with("wl"), |_| true);
         assert_eq!(a.len(), 2);
         assert!(a[0].wired && a[0].up && a[0].has_recovery_ip() && !a[0].dhcp);
         assert_eq!(a[0].addrs.len(), 1);
         assert!(a[1].wireless && !a[1].up && a[1].dhcp);
-        assert!(parse_ip_json(b"not json", |_| false).is_empty());
+        assert!(parse_ip_json(b"not json", |_| false, |_| true).is_empty());
     }
 
     #[test]
