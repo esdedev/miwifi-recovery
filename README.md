@@ -19,6 +19,13 @@ firmware on a Xiaomi router that no longer starts, using the router's built-in r
 > Use it only on your own devices. Recovery erases the router's settings.
 > Read the [legal notice](LEGAL.md).
 
+## Tested
+
+On a real Xiaomi BE3600 2.5G (RD15) with the Windows app: it set the PC's address, reinstalled
+the official 1.0.87 firmware, and refused 1.0.68 before sending it (anti-rollback), as the router
+does. Other models use the same recovery mode, but have not been tested yet: reports are welcome
+in an issue.
+
 ## Download
 
 Get the latest build from [Releases](https://github.com/esdedev/miwifi-recovery/releases):

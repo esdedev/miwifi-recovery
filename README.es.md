@@ -21,6 +21,13 @@ oficial en un router Xiaomi que ya no arranca, usando el modo de recuperación d
 > Úsala solo en dispositivos tuyos. La recuperación borra la configuración del router.
 > Lee el [aviso legal](LEGAL.md).
 
+## Probada
+
+En un Xiaomi BE3600 2.5G (RD15) real, con la aplicación de Windows: configuró la dirección del
+PC, reinstaló el firmware oficial 1.0.87 y rechazó la 1.0.68 antes de enviarla (anti-rollback),
+igual que hace el router. Otros modelos usan el mismo modo de recuperación, pero aún no se han
+probado: si lo pruebas, cuéntalo en una issue.
+
 ## Descarga
 
 En [Releases](https://github.com/esdedev/miwifi-recovery/releases) están:
